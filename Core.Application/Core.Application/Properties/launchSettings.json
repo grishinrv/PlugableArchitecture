@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Core.Application": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\roman\\Documents\\NeatTalks\\App\\Core.Application.exe",
+      "workingDirectory": "C:\\Users\\roman\\Documents\\NeatTalks\\App\\"
+    }
+  }
+}

@@ -14,12 +14,13 @@ namespace Core.Application
         static async Task Main(string[] args)
         {
             var appPath = Directory.GetCurrentDirectory();
-            var pluginsPath = Path.Combine(appPath + "plugins");
+            var pluginsPath = appPath + "\\plugins";
+            Console.WriteLine(pluginsPath);
             var plugins = Directory.GetFiles(pluginsPath, "Plugin.*.dll", SearchOption.TopDirectoryOnly);
             var loadedAssemblies = new List<Assembly>(plugins.Length);
             plugins.Where(x => !x.EndsWith("Core.Contracts.dll"))
                     .ToList()
-                    .ForEach(x => loadedAssemblies.Add(Assembly.Load(x)));
+                    .ForEach(x => loadedAssemblies.Add(Assembly.LoadFrom(x)));
 
             var modules = new Dictionary<Assembly, ModuleBase>();
 
@@ -46,6 +47,7 @@ namespace Core.Application
             }
             Console.WriteLine("Стадия инициализации модулей... Готово");
 
+            context.BuildContainer();
             Console.WriteLine("Стадия активации модулей...");
             foreach (var module in modules)
             {
