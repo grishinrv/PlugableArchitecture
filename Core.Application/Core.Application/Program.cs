@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Autofac;
+using Core.Contracts;
 
 namespace Core.Application
 {
@@ -11,10 +14,47 @@ namespace Core.Application
         {
             var appPath = Directory.GetCurrentDirectory();
             var pluginsPath = Path.Combine(appPath + "plugins");
-            var plugins = Directory.GetFiles(pluginsPath, "", SearchOption.TopDirectoryOnly);
-            Assembly.L
-            Console.WriteLine("Hello World!");
-            var builder = new ContainerBuilder();
+            var plugins = Directory.GetFiles(pluginsPath, "Plugin.*.dll", SearchOption.TopDirectoryOnly);
+            var loadedAssemblies = new List<Assembly>(plugins.Length);
+            plugins.Where(x => !x.EndsWith("Core.Contracts.dll"))
+                    .ToList()
+                    .ForEach(x => loadedAssemblies.Add(Assembly.Load(x)));
+
+            var modules = new Dictionary<Assembly, ModuleBase>();
+
+            foreach (var assembly in loadedAssemblies)
+            {
+                Console.WriteLine($"Сканируем сборку {assembly}");
+                var moduleType = assembly.GetTypes().FirstOrDefault(x => x.BaseType == typeof(ModuleBase));
+                if (moduleType != null)
+                {
+                    Console.WriteLine("Регистрируем описатель модуля...");
+                    var module = (ModuleBase)Activator.CreateInstance(moduleType);
+                    modules.Add(assembly, module);
+                    Console.WriteLine("Регистрируем описатель модуля... Готово");
+                }
+            }
+
+            Console.WriteLine("Стадия инициализации модулей...");
+            var context = new Context();
+            foreach (var module in modules)
+            {
+                Console.WriteLine($"Инициализация модуля {module.Key}...");
+                module.Value.Init(context);
+                Console.WriteLine($"Инициализация модуля {module.Key}... Готово");
+            }
+            Console.WriteLine("Стадия инициализации модулей... Готово");
+
+            Console.WriteLine("Стадия активации модулей...");
+            foreach (var module in modules)
+            {
+                Console.WriteLine($"Активация модуля {module.Key}...");
+                module.Value.Activate(context);
+                Console.WriteLine($"Активация модуля {module.Key}... Готово");
+            }
+            Console.WriteLine("Стадия активации модулей... Готово");
+            Console.WriteLine("Приложение запущено. Для остановки нажмите любую клавишу...");
+            Console.ReadKey();
         }
     }
 }
