@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
 using Core.Contracts;
 
@@ -10,7 +11,7 @@ namespace Core.Application
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var appPath = Directory.GetCurrentDirectory();
             var pluginsPath = Path.Combine(appPath + "plugins");
@@ -49,12 +50,18 @@ namespace Core.Application
             foreach (var module in modules)
             {
                 Console.WriteLine($"Активация модуля {module.Key}...");
-                module.Value.Activate(context);
+                await module.Value.Activate(context);
                 Console.WriteLine($"Активация модуля {module.Key}... Готово");
             }
             Console.WriteLine("Стадия активации модулей... Готово");
-            Console.WriteLine("Приложение запущено. Для остановки нажмите любую клавишу...");
-            Console.ReadKey();
+            Console.WriteLine("Приложение запущено.");
+            await (Task.Run(async () =>
+             {
+                 while (true)
+                 {
+                     await Task.Delay(3000);
+                 }
+             }));
         }
     }
 }
