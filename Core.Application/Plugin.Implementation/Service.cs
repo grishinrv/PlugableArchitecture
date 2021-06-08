@@ -11,7 +11,6 @@ namespace Plugin.Implementation
         public Service(ILogger logger)
         {
             _logger = logger;
-            SayHello();
         }
 
         public void SayHello()
